@@ -1,0 +1,7 @@
+require 'rubygems'
+require 'koala'
+
+graph = Koala::Facebook::GraphAPI.new
+
+puts graph.get_object("jmgerrish")
+
