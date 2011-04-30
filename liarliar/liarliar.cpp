@@ -42,34 +42,39 @@ void load_file(char *filename, Graph &liar_graph)
     return;
 }
 
-// breadth-first search to check this accusers accusations
-// If we find a contradiction, return false, otherwise return true
-bool check_accusations(const string &accuser,
-                       Graph &liar_graph,
-                       coloring &liars)
+// Use breadth-first search to color a component
+bool color_component(const string &node,
+                     Graph &liar_graph,
+                     coloring &liars,
+                     coloring &visited)
 {
-    coloring visited;
     queue<pair <string,bool> > q;
     pair <string,bool> v;
 
-    v = make_pair(accuser, true);
+    v = make_pair(node, true);
     q.push(v);
-    visited[accuser] = true;
 
     while (!q.empty()) {
         v = q.front();
         q.pop();
-        vector<string> neighbors = liar_graph.neighbors(v.first);
+        if (visited.find(v.first) != visited.end()) {
+            continue;
+        }
+        visited[v.first] = true;
+        liars[v.first] = v.second;
         bool color = !v.second;
-        for (vector<string>::iterator it = neighbors.begin();
-             it != neighbors.end();
+        neighbor_list *neighbors = liar_graph.neighbors(v.first);
+
+        for (neighbor_list::iterator it = neighbors->begin();
+             it != neighbors->end();
              ++it) {
-            if (liars.find(*it) != liars.end())
-                if (liars[*it] != color)
+            if (liars.find(it->first) != liars.end())
+                if (liars[it->first] != color) {
+                    //cout << "Found contradiction " << it->first << endl;
                     return false;
-            if (visited.find(*it) == visited.end()) {
-                visited[*it] = true;
-                q.push(make_pair(*it, color));
+                }
+            if (visited.find(it->first) == visited.end()) {
+                q.push(make_pair(it->first, color));
             }
         }
     }
@@ -77,43 +82,42 @@ bool check_accusations(const string &accuser,
     return true;
 }
 
-void find_liars(Graph &liar_graph, coloring &liars)
+bool find_liars(Graph &liar_graph, coloring &liars)
 {
-    // Iterator through the accusers
+    coloring visited;
     adjacency_list::iterator edges;
     bool color, accuser_color;
     edges = liar_graph.edges();
 
+    // Iterate through each source vertex
+    // If the vertex hasn't been visited, do a BFS starting from it.
+    // This should ensure we visit every disconnected component
     for (edges = liar_graph.edges(); edges != liar_graph.end(); ++edges) {
-        accuser_color = check_accusations(edges->first, liar_graph, liars);
-
-        color = !accuser_color;
-        liars[edges->first] = accuser_color;
-        for (vector<string>::iterator target_it = edges->second.begin();
-             target_it != edges->second.end();
-             ++target_it) {
-            liars[*target_it] = color;
-        }
+        if (visited.find(edges->first) == visited.end())
+            color_component(edges->first, liar_graph, liars, visited);
     }
 
+    return true;
 }
 
 int main(int argc, char **argv)
 {
-    class Graph liar_graph;
+    class Graph liar_graph(false);
     coloring liars;
 
+    //cout << "Loading file" << endl;
     if (argc == 2) {
         load_file(argv[1], liar_graph);
     } else {
         cout << "Error: Must specify a filename to load" << endl;
         return 1;
     }
+    //liar_graph.print();
 
-    // cout << liar_graph;
-
+    //cout << "Finding liars" << endl;
     find_liars(liar_graph, liars);
 
+    //cout << "Finding solution" << endl;
     int liar_cnt = 0, honest_cnt = 0;
     for (coloring::iterator it = liars.begin(); it != liars.end(); ++it) {
         if (it->second == false)
@@ -124,5 +128,6 @@ int main(int argc, char **argv)
 
     cout << max(liar_cnt, honest_cnt) << " " << min(liar_cnt, honest_cnt) <<
         endl;
+
     return 0;
 }
