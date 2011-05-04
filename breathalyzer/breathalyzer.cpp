@@ -43,7 +43,7 @@ vector<string> load_words(const char *filename)
     return words;
 }
 
-int find_diff(const string &w1, const string &w2)
+int find_diff(const string &w1, const string &w2, const int min_found)
 {
     int total_cost;
     string word1 = w1;
@@ -81,6 +81,14 @@ int find_diff(const string &w1, const string &w2)
             }
             v[i][j] = min(v[i - 1][j - 1] + match_cost,
                           min(v[i - 1][j] + 1, v[i][j - 1] + 1));
+            if ((i == j) && (v[i][j] >= min_found)) {
+                // Free the array
+                for(int i = 0; i < word1.length() + 1; i++)
+                    free(v[i]);
+                free(v);
+
+                return min_found;
+            }
         }
     }
 
@@ -127,7 +135,7 @@ int main(int argc, char **argv)
         for (vector<string>::const_iterator it2 = words.begin();
              it2 != words.end();
              ++it2) {
-            cost = find_diff(*it, *it2);
+            cost = find_diff(*it, *it2, min_cost);
 //            cout << "cost for " << *it << " vs " << *it2 << ": " << cost
 //                 << endl;
             if (cost < min_cost)

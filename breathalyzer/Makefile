@@ -1,6 +1,6 @@
 all: breathalyzer
 
-breathalyzer: breathalyzer.cpp
+breathalyzer: breathalyzer.cpp trie.cpp
 	$(CXX) -g -o $@ $^
 
 clean:
