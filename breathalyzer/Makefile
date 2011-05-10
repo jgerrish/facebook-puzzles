@@ -1,7 +1,8 @@
 all: breathalyzer
 
 breathalyzer: breathalyzer.cpp trie.cpp
-	$(CXX) -g -o $@ $^
+	$(CXX) -O2 -o $@ $^
+	#$(CXX) -g -o $@ $^
 
 clean:
 	rm -f *.o
