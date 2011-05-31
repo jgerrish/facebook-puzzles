@@ -4,6 +4,12 @@
 #include "problem.h"
 
 using namespace std;
+using namespace jgerrish;
+
+size_type Problem::size() const
+{
+    return predictions_by_start.size();
+}
 
 // Load a single integer from the file filename
 int Problem::load_file(const char *filename)
@@ -23,9 +29,10 @@ int Problem::load_file(const char *filename)
 
     // input predictions
     input_file >> num;
+
     for (int i = 0; i < num; i++) {
         input_file >> pred;
-        predictions.insert(pred);
+        predictions_by_start.insert(prediction_pair(pred.get_start(), pred));
     }
 
     return num;
