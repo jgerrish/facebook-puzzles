@@ -15,16 +15,21 @@ size_type Problem::size() const
 int Problem::load_file(const char *filename)
 {
     int num, cnt = 0;
-    char line[80];
+    string line;
     Prediction pred;
 
     std::ifstream input_file(filename);
+    // Initialize DNS string
+    dna.clear();
 
     // Input DNA string
     input_file >> num;
     while ((dna.length() < num) && input_file.good()) {
-        input_file.getline(line, 81);
-        dna += line;
+        getline(input_file, line);
+        if (line.length() > (num - dna.length()))
+            dna += line.substr(0, num - dna.length());
+        else
+            dna += line;
     }
 
     // input predictions
